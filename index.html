@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#090909">
+  <title>Anna-Lyze | Trading Assistant</title>
+  <style>
+    :root {
+      --bg: #090909;
+      --bg-soft: #111111;
+      --panel-strong: rgba(21, 21, 21, 0.98);
+      --line: rgba(201, 160, 74, 0.2);
+      --line-strong: rgba(201, 160, 74, 0.42);
+      --gold-soft: #f0d68a;
+      --text: #f6f0df;
+      --muted: #b2a58a;
+      --danger: #ff6767;
+      --danger-soft: rgba(255, 103, 103, 0.12);
+      --success: #72d58d;
+      --success-soft: rgba(114, 213, 141, 0.14);
+      --shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+      --radius: 24px;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Georgia", "Times New Roman", serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top, rgba(201, 160, 74, 0.18), transparent 32%),
+        radial-gradient(circle at 80% 20%, rgba(201, 160, 74, 0.1), transparent 24%),
+        linear-gradient(180deg, #131313 0%, #080808 44%, #050505 100%);
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(125deg, rgba(201, 160, 74, 0.05), transparent 28%),
+        repeating-linear-gradient(
+          90deg,
+          rgba(255, 255, 255, 0.02) 0,
+          rgba(255, 255, 255, 0.02) 1px,
+          transparent 1px,
+          transparent 26px
+        );
+      opacity: 0.28;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    .app-shell {
+      width: min(100%, 460px);
+      margin: 0 auto;
+      padding: calc(22px + var(--safe-top)) 16px calc(28px + var(--safe-bottom));
+      position: relative;
+    }
+
+    .hero,
+    .panel,
+    .result-card,
+    .insight-card {
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(18, 18, 18, 0.96), rgba(10, 10, 10, 0.96));
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+
+    .hero {
+      border-radius: 32px;
+      padding: 24px;
+      position: sticky;
+      top: 12px;
+      z-index: 3;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto -10% -42% auto;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(201, 160, 74, 0.28), transparent 70%);
+      filter: blur(10px);
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      font-size: 0.72rem;
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+      color: var(--gold-soft);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 9vw, 3.2rem);
+      line-height: 0.95;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+    }
+
+    .hero p {
+      margin: 14px 0 0;
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 0.97rem;
+      max-width: 26ch;
+    }
+
+    .hero-strip {
+      margin-top: 20px;
+      padding-top: 16px;
+      display: flex;
+      gap: 12px;
+      border-top: 1px solid rgba(201, 160, 74, 0.14);
+      position: relative;
+      z-index: 1;
+    }
+
+    .metric-chip {
+      flex: 1;
+      padding: 12px 14px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(201, 160, 74, 0.14);
+    }
+
+    .metric-chip span {
+      display: block;
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .metric-chip strong {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .stack {
+      display: grid;
+      gap: 16px;
+      margin-top: 18px;
+    }
+
+    .panel,
+    .result-card,
+    .insight-card {
+      border-radius: var(--radius);
+      padding: 18px;
+    }
+
+    .panel-header,
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .panel-title,
+    .section-title {
+      margin: 0;
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--gold-soft);
+    }
+
+    .panel-note {
+      font-size: 0.76rem;
+      color: var(--muted);
+      text-align: right;
+      line-height: 1.35;
+    }
+
+    .grid,
+    .toggle-grid,
+    .score-grid,
+    .breakdown-grid,
+    .insight-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .grid {
+      gap: 12px;
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+    }
+
+    .field label {
+      font-size: 0.82rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .field select,
+    .field input {
+      width: 100%;
+      min-height: 54px;
+      border-radius: 18px;
+      border: 1px solid rgba(201, 160, 74, 0.16);
+      background: var(--panel-strong);
+      color: var(--text);
+      padding: 0 16px;
+      outline: none;
+      appearance: none;
+      transition: border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.015);
+    }
+
+    .field select:focus,
+    .field input:focus {
+      border-color: var(--line-strong);
+      box-shadow: 0 0 0 4px rgba(201, 160, 74, 0.09);
+      transform: translateY(-1px);
+    }
+
+    .hint,
+    .footer-note,
+    .empty-line {
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .hint,
+    .footer-note {
+      font-size: 0.78rem;
+    }
+
+    .toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 64px;
+      border-radius: 20px;
+      padding: 14px 16px;
+      border: 1px solid rgba(201, 160, 74, 0.12);
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .toggle-copy strong {
+      display: block;
+      font-size: 0.92rem;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .toggle-copy span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.8rem;
+      line-height: 1.35;
+    }
+
+    .switch {
+      position: relative;
+      width: 56px;
+      height: 32px;
+      flex: 0 0 auto;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+      position: absolute;
+    }
+
+    .slider {
+      position: absolute;
+      inset: 0;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(201, 160, 74, 0.18);
+      transition: background 180ms ease, border-color 180ms ease;
+    }
+
+    .slider::before {
+      content: "";
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      left: 3px;
+      top: 3px;
+      background: linear-gradient(180deg, #f7ebc3, #c79a3f);
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+      transition: transform 180ms ease;
+    }
+
+    .switch input:checked + .slider {
+      background: rgba(201, 160, 74, 0.2);
+      border-color: rgba(201, 160, 74, 0.4);
+    }
+
+    .switch input:checked + .slider::before {
+      transform: translateX(24px);
+    }
+
+    .cta-wrap {
+      position: sticky;
+      bottom: 14px;
+      z-index: 4;
+    }
+
+    .validate-button,
+    .secondary-button {
+      width: 100%;
+      border: 0;
+      cursor: pointer;
+      border-radius: 22px;
+      min-height: 60px;
+      transition: transform 180ms ease, box-shadow 180ms ease;
+    }
+
+    .validate-button {
+      background: linear-gradient(135deg, #f4e0a0 0%, #d1a850 30%, #8d6523 100%);
+      color: #100d06;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      box-shadow: 0 18px 36px rgba(140, 101, 35, 0.4);
+    }
+
+    .validate-button:active,
+    .secondary-button:active {
+      transform: scale(0.98);
+    }
+
+    .secondary-button {
+      margin-top: 10px;
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text);
+      border: 1px solid rgba(201, 160, 74, 0.14);
+    }
+
+    .result-card {
+      overflow: hidden;
+      position: relative;
+      transform: translateY(14px);
+      opacity: 0;
+      transition: transform 300ms ease, opacity 300ms ease;
+      display: none;
+    }
+
+    .result-card.show {
+      display: block;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .result-card.valid::before,
+    .result-card.invalid::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 4px;
+    }
+
+    .result-card.valid::before {
+      background: linear-gradient(180deg, #c9a04a, #72d58d);
+    }
+
+    .result-card.invalid::before {
+      background: linear-gradient(180deg, #c9a04a, #ff6767);
+    }
+
+    .verdict-row,
+    .score-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .verdict-row {
+      align-items: flex-start;
+      margin-bottom: 18px;
+    }
+
+    .verdict-label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.26em;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .verdict-value {
+      margin: 0;
+      font-size: 2rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .score-orb {
+      width: 88px;
+      height: 88px;
+      border-radius: 50%;
+      border: 1px solid rgba(201, 160, 74, 0.24);
+      display: grid;
+      place-items: center;
+      background: radial-gradient(circle, rgba(201, 160, 74, 0.16), rgba(255, 255, 255, 0.02));
+      box-shadow: inset 0 0 0 8px rgba(255, 255, 255, 0.015);
+      flex: 0 0 auto;
+    }
+
+    .score-orb strong,
+    .score-item strong,
+    .insight-card span {
+      color: var(--gold-soft);
+    }
+
+    .score-orb strong {
+      font-size: 1.15rem;
+    }
+
+    .signature {
+      margin: 0 0 18px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      line-height: 1.5;
+      font-size: 0.96rem;
+    }
+
+    .signature.valid {
+      background: var(--success-soft);
+      border: 1px solid rgba(114, 213, 141, 0.22);
+      color: #d9f5e0;
+    }
+
+    .signature.invalid {
+      background: var(--danger-soft);
+      border: 1px solid rgba(255, 103, 103, 0.18);
+      color: #ffd6d6;
+    }
+
+    .score-item,
+    .breakdown-item {
+      border-radius: 18px;
+      padding: 14px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(201, 160, 74, 0.1);
+    }
+
+    .score-item span:first-child,
+    .breakdown-heading,
+    .insight-card strong {
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+    }
+
+    .score-item span:first-child {
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    .breakdown-heading {
+      margin: 2px 0 10px;
+      font-size: 0.8rem;
+      color: var(--gold-soft);
+    }
+
+    .breakdown-list {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--text);
+      line-height: 1.55;
+    }
+
+    .breakdown-list li + li {
+      margin-top: 6px;
+    }
+
+    .insight-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .insight-card strong {
+      display: block;
+      font-size: 0.76rem;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .insight-card span {
+      display: block;
+      font-size: 1.08rem;
+      line-height: 1.35;
+    }
+
+    .footer-note {
+      margin-top: 12px;
+      text-align: center;
+    }
+
+    @media (min-width: 720px) {
+      .app-shell {
+        width: min(100%, 980px);
+        padding-left: 22px;
+        padding-right: 22px;
+      }
+
+      .hero {
+        position: relative;
+        top: 0;
+      }
+
+      .stack {
+        grid-template-columns: 1.05fr 0.95fr;
+        align-items: start;
+      }
+
+      .grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .cta-wrap {
+        position: static;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      *,
+      *::before,
+      *::after {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app-shell">
+    <section class="hero" aria-label="Anna-Lyze introduction">
+      <p class="eyebrow">Luxury Trading Validation</p>
+      <h1>Anna-Lyze</h1>
+      <p>Strict trade validation. Professional execution review. No tolerance for rule violations.</p>
+      <div class="hero-strip">
+        <div class="metric-chip">
+          <span>Standard</span>
+          <strong>Rule-first</strong>
+        </div>
+        <div class="metric-chip">
+          <span>Mode</span>
+          <strong>Mobile desk</strong>
+        </div>
+      </div>
+    </section>
+
+    <div class="stack">
+      <section class="panel" aria-labelledby="trade-form-title">
+        <div class="panel-header">
+          <h2 class="panel-title" id="trade-form-title">Trade Intake</h2>
+          <div class="panel-note">Submit only structured setups.</div>
+        </div>
+
+        <form id="tradeForm" novalidate>
+          <div class="grid">
+            <div class="field"><label for="pair">Pair</label><select id="pair" name="pair" required></select></div>
+            <div class="field"><label for="rr">Risk to Reward</label><input id="rr" name="rr" type="number" step="0.1" min="0" inputmode="decimal" placeholder="2.0" required></div>
+            <div class="field"><label for="biasTrend">4H Trend Bias</label><select id="biasTrend" name="biasTrend" required><option value="">Select trend</option><option value="bullish">Bullish</option><option value="bearish">Bearish</option><option value="unclear">Unclear</option></select></div>
+            <div class="field"><label for="biasReaction">4H Key Level Reaction</label><select id="biasReaction" name="biasReaction" required><option value="">Select reaction</option><option value="confirmed">Confirmed reaction</option><option value="weak">Weak reaction</option><option value="none">No reaction</option></select></div>
+            <div class="field"><label for="pullback">1H Pullback</label><select id="pullback" name="pullback" required><option value="">Select status</option><option value="yes">Present</option><option value="partial">Partial</option><option value="no">Absent</option></select></div>
+            <div class="field"><label for="liquidity">1H Liquidity Grab</label><select id="liquidity" name="liquidity" required><option value="">Select status</option><option value="yes">Present</option><option value="partial">Partial</option><option value="no">Absent</option></select></div>
+            <div class="field"><label for="choch">1H CHOCH</label><select id="choch" name="choch" required><option value="">Select status</option><option value="yes">Present</option><option value="partial">Partial</option><option value="no">Absent</option></select></div>
+            <div class="field"><label for="bos">Entry Break of Structure</label><select id="bos" name="bos" required><option value="">Select status</option><option value="yes">Confirmed</option><option value="partial">Weak</option><option value="no">Missing</option></select></div>
+            <div class="field"><label for="retest">Entry Retest</label><select id="retest" name="retest" required><option value="">Select status</option><option value="yes">Confirmed</option><option value="partial">Imperfect</option><option value="no">Missing</option></select></div>
+            <div class="field"><label for="confirmation">Entry Confirmation</label><select id="confirmation" name="confirmation" required><option value="">Select status</option><option value="yes">Confirmed</option><option value="partial">Weak</option><option value="no">Missing</option></select></div>
+          </div>
+
+          <div class="panel" style="padding:16px; margin-top:16px;">
+            <div class="section-head">
+              <h3 class="section-title">Risk Conditions</h3>
+              <div class="panel-note">Disqualifiers are not negotiable.</div>
+            </div>
+            <div class="toggle-grid">
+              <label class="toggle" for="newsNearby"><div class="toggle-copy"><strong>News nearby</strong><span>High-impact event close to entry time.</span></div><span class="switch"><input id="newsNearby" name="newsNearby" type="checkbox"><span class="slider"></span></span></label>
+              <label class="toggle" for="strongZone"><div class="toggle-copy"><strong>Trading into strong zone</strong><span>Price has immediate resistance or support overhead.</span></div><span class="switch"><input id="strongZone" name="strongZone" type="checkbox"><span class="slider"></span></span></label>
+              <label class="toggle" for="consolidation"><div class="toggle-copy"><strong>Consolidation</strong><span>Entry is forming inside compression or chop.</span></div><span class="switch"><input id="consolidation" name="consolidation" type="checkbox"><span class="slider"></span></span></label>
+            </div>
+          </div>
+
+          <p class="hint">A valid trade requires a clear 4H bias, complete 1H structure, confirmed break and retest, and a minimum 1:2 reward profile.</p>
+
+          <div class="cta-wrap">
+            <button class="validate-button" type="submit">Validate Trade</button>
+            <button class="secondary-button" type="button" id="resetStats">Reset Stored Stats</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="stack" aria-label="Trade results and dashboard">
+        <article class="result-card" id="resultCard" aria-live="polite">
+          <div class="verdict-row">
+            <div>
+              <div class="verdict-label">Verdict</div>
+              <h2 class="verdict-value" id="verdictText">Invalid</h2>
+            </div>
+            <div class="score-orb"><strong id="totalScore">0%</strong></div>
+          </div>
+          <p class="signature invalid" id="signatureMessage">No assessment submitted.</p>
+          <div class="section-head">
+            <h3 class="section-title">Category Scores</h3>
+            <div class="panel-note">Weighted to 100%</div>
+          </div>
+          <div class="score-grid" id="scoreGrid"></div>
+          <div class="section-head" style="margin-top:18px;">
+            <h3 class="section-title">Breakdown</h3>
+            <div class="panel-note">Correct vs missing</div>
+          </div>
+          <div class="breakdown-grid">
+            <div class="breakdown-item">
+              <h4 class="breakdown-heading">What is correct</h4>
+              <ul class="breakdown-list" id="correctList"></ul>
+              <p class="empty-line" id="correctEmpty" hidden>No strength recorded.</p>
+            </div>
+            <div class="breakdown-item">
+              <h4 class="breakdown-heading">What is missing</h4>
+              <ul class="breakdown-list" id="missingList"></ul>
+              <p class="empty-line" id="missingEmpty" hidden>No deficiencies recorded.</p>
+            </div>
+          </div>
+        </article>
+
+        <section class="panel">
+          <div class="section-head">
+            <h2 class="section-title">Discipline Dashboard</h2>
+            <div class="panel-note">Stored on this device</div>
+          </div>
+          <div class="insight-grid">
+            <article class="insight-card"><strong>Most Common Mistake</strong><span id="commonMistake">No data yet</span></article>
+            <article class="insight-card"><strong>Worst Habit</strong><span id="worstHabit">No data yet</span></article>
+          </div>
+          <p class="footer-note">Anna-Lyze records validation failures locally to expose repeated execution problems.</p>
+        </section>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const forexPairs = [
+      "EURUSD", "GBPUSD", "USDJPY", "USDCHF", "USDCAD", "AUDUSD", "NZDUSD",
+      "EURGBP", "EURJPY", "EURCHF", "EURAUD", "EURNZD", "EURCAD",
+      "GBPJPY", "GBPCHF", "GBPAUD", "GBPNZD", "GBPCAD",
+      "AUDJPY", "AUDCHF", "AUDCAD", "AUDNZD",
+      "NZDJPY", "NZDCHF", "NZDCAD", "CADJPY", "CADCHF", "CHFJPY", "XAUUSD"
+    ];
+
+    const pairSelect = document.getElementById("pair");
+    const form = document.getElementById("tradeForm");
+    const resultCard = document.getElementById("resultCard");
+    const verdictText = document.getElementById("verdictText");
+    const totalScore = document.getElementById("totalScore");
+    const signatureMessage = document.getElementById("signatureMessage");
+    const scoreGrid = document.getElementById("scoreGrid");
+    const correctList = document.getElementById("correctList");
+    const missingList = document.getElementById("missingList");
+    const correctEmpty = document.getElementById("correctEmpty");
+    const missingEmpty = document.getElementById("missingEmpty");
+    const commonMistake = document.getElementById("commonMistake");
+    const worstHabit = document.getElementById("worstHabit");
+    const resetStatsButton = document.getElementById("resetStats");
+
+    const storageKey = "anna_lyze_stats_v1";
+    const scoreWeights = { fourHour: 30, oneHour: 30, entry: 25, risk: 15 };
+    const strictMessages = {
+      invalid: [
+        "You broke your rules.",
+        "No retest confirmed.",
+        "This is not a valid setup.",
+        "The structure is incomplete. Stand down.",
+        "You are attempting to force a trade."
+      ],
+      valid: [
+        "Rules respected. This setup is acceptable.",
+        "Execution criteria met. Proceed with discipline.",
+        "Structured, confirmed, and properly priced."
+      ]
+    };
+
+    initializePairs();
+    renderDashboard();
+
+    form.addEventListener("submit", function (event) {
+      event.preventDefault();
+      const data = new FormData(form);
+      const evaluation = validateTrade({
+        pair: data.get("pair"),
+        rr: Number(data.get("rr")),
+        biasTrend: data.get("biasTrend"),
+        biasReaction: data.get("biasReaction"),
+        pullback: data.get("pullback"),
+        liquidity: data.get("liquidity"),
+        choch: data.get("choch"),
+        bos: data.get("bos"),
+        retest: data.get("retest"),
+        confirmation: data.get("confirmation"),
+        newsNearby: document.getElementById("newsNearby").checked,
+        strongZone: document.getElementById("strongZone").checked,
+        consolidation: document.getElementById("consolidation").checked
+      });
+
+      renderResult(evaluation);
+      persistStats(evaluation);
+      renderDashboard();
+      resultCard.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
+    resetStatsButton.addEventListener("click", function () {
+      localStorage.removeItem(storageKey);
+      renderDashboard();
+    });
+
+    function initializePairs() {
+      pairSelect.innerHTML = '<option value="">Select pair</option>' +
+        forexPairs.map(function (pair) {
+          return '<option value="' + pair + '">' + pair + "</option>";
+        }).join("");
+    }
+
+    function scoreFromStatus(status) {
+      if (status === "yes" || status === "confirmed" || status === "bullish" || status === "bearish") {
+        return 1;
+      }
+      if (status === "partial" || status === "weak") {
+        return 0.5;
+      }
+      return 0;
+    }
+
+    function validateTrade(values) {
+      const positives = [];
+      const misses = [];
+      const failureTags = [];
+
+      const fourHourScore = (
+        scoreFromStatus(values.biasTrend) * 0.5 +
+        scoreFromStatus(values.biasReaction) * 0.5
+      ) * scoreWeights.fourHour;
+
+      const oneHourScore = (
+        scoreFromStatus(values.pullback) +
+        scoreFromStatus(values.liquidity) +
+        scoreFromStatus(values.choch)
+      ) / 3 * scoreWeights.oneHour;
+
+      const entryScore = (
+        scoreFromStatus(values.bos) +
+        scoreFromStatus(values.retest) +
+        scoreFromStatus(values.confirmation)
+      ) / 3 * scoreWeights.entry;
+
+      let riskScore = values.rr >= 2 ? scoreWeights.risk : values.rr >= 1.5 ? scoreWeights.risk * 0.5 : 0;
+      if (values.newsNearby || values.strongZone || values.consolidation) {
+        riskScore = Math.max(0, riskScore - 6);
+      }
+
+      if (values.pair) {
+        positives.push(values.pair + " selected.");
+      } else {
+        misses.push("Pair was not selected.");
+        failureTags.push("missing_pair");
+      }
+
+      if ((values.biasTrend === "bullish" || values.biasTrend === "bearish") && values.biasReaction === "confirmed") {
+        positives.push("4H bias is clear and backed by a confirmed key level reaction.");
+      } else {
+        misses.push("4H bias is not clear enough.");
+        failureTags.push("unclear_4h_bias");
+      }
+
+      if (values.pullback === "yes") {
+        positives.push("1H pullback is present.");
+      } else {
+        misses.push("1H pullback is missing or incomplete.");
+        failureTags.push("pullback_missing");
+      }
+
+      if (values.liquidity === "yes") {
+        positives.push("1H liquidity grab is present.");
+      } else {
+        misses.push("1H liquidity grab is missing or incomplete.");
+        failureTags.push("liquidity_missing");
+      }
+
+      if (values.choch === "yes") {
+        positives.push("1H CHOCH is confirmed.");
+      } else {
+        misses.push("1H CHOCH is missing or incomplete.");
+        failureTags.push("choch_missing");
+      }
+
+      if (values.bos === "yes") {
+        positives.push("Entry break of structure is confirmed.");
+      } else {
+        misses.push("No break of structure confirmed.");
+        failureTags.push("bos_missing");
+      }
+
+      if (values.retest === "yes") {
+        positives.push("Retest is confirmed.");
+      } else {
+        misses.push("No retest confirmed.");
+        failureTags.push("retest_missing");
+      }
+
+      if (values.confirmation === "yes") {
+        positives.push("Entry confirmation is present.");
+      } else {
+        misses.push("Entry confirmation is missing or weak.");
+        failureTags.push("confirmation_missing");
+      }
+
+      if (values.rr >= 2) {
+        positives.push("Risk-to-reward meets the 1:2 minimum.");
+      } else {
+        misses.push("Risk-to-reward is below 1:2.");
+        failureTags.push("rr_below_minimum");
+      }
+
+      if (values.newsNearby) {
+        misses.push("News is too close to the setup.");
+        failureTags.push("news_nearby");
+      } else {
+        positives.push("No nearby news conflict.");
+      }
+
+      if (values.strongZone) {
+        misses.push("You are trading into a strong zone.");
+        failureTags.push("strong_zone");
+      } else {
+        positives.push("No immediate strong zone conflict.");
+      }
+
+      if (values.consolidation) {
+        misses.push("Entry is inside consolidation.");
+        failureTags.push("consolidation");
+      } else {
+        positives.push("Market is not in consolidation at entry.");
+      }
+
+      const invalid =
+        !(values.biasTrend === "bullish" || values.biasTrend === "bearish") ||
+        values.biasReaction !== "confirmed" ||
+        values.pullback !== "yes" ||
+        values.liquidity !== "yes" ||
+        values.choch !== "yes" ||
+        values.bos !== "yes" ||
+        values.retest !== "yes" ||
+        values.rr < 2 ||
+        values.newsNearby ||
+        values.strongZone ||
+        values.consolidation;
+
+      const total = Math.max(0, Math.min(100, Math.round(fourHourScore + oneHourScore + entryScore + riskScore)));
+
+      return {
+        verdict: invalid ? "INVALID" : "VALID",
+        totalScore: total,
+        scores: {
+          "4H Bias": Math.round(fourHourScore),
+          "1H Structure": Math.round(oneHourScore),
+          "Entry Trigger": Math.round(entryScore),
+          "Risk": Math.round(riskScore)
+        },
+        positives: filterUnique(positives),
+        misses: filterUnique(misses),
+        failureTags,
+        signature: buildSignature(invalid, failureTags)
+      };
+    }
+
+    function filterUnique(items) {
+      return Array.from(new Set(items));
+    }
+
+    function buildSignature(isInvalid, failureTags) {
+      if (!isInvalid) {
+        return strictMessages.valid[Math.floor(Math.random() * strictMessages.valid.length)];
+      }
+      if (failureTags.includes("retest_missing")) {
+        return "No retest confirmed.";
+      }
+      if (failureTags.includes("unclear_4h_bias")) {
+        return "Your higher-timeframe bias is not clear.";
+      }
+      if (failureTags.includes("consolidation")) {
+        return "This setup is trapped in consolidation.";
+      }
+      if (failureTags.includes("strong_zone")) {
+        return "You are trading directly into opposing strength.";
+      }
+      return strictMessages.invalid[Math.floor(Math.random() * strictMessages.invalid.length)];
+    }
+
+    function renderResult(evaluation) {
+      verdictText.textContent = evaluation.verdict;
+      verdictText.style.color = evaluation.verdict === "VALID" ? "var(--success)" : "var(--danger)";
+      totalScore.textContent = evaluation.totalScore + "%";
+      signatureMessage.textContent = evaluation.signature;
+      signatureMessage.className = "signature " + (evaluation.verdict === "VALID" ? "valid" : "invalid");
+
+      scoreGrid.innerHTML = Object.entries(evaluation.scores).map(function (entry) {
+        return '<div class="score-item"><span>' + entry[0] + '</span><strong>' + entry[1] + '%</strong></div>';
+      }).join("");
+
+      renderList(correctList, correctEmpty, evaluation.positives);
+      renderList(missingList, missingEmpty, evaluation.misses);
+
+      resultCard.classList.remove("valid", "invalid", "show");
+      resultCard.classList.add(evaluation.verdict === "VALID" ? "valid" : "invalid");
+      void resultCard.offsetWidth;
+      resultCard.style.display = "block";
+      requestAnimationFrame(function () {
+        resultCard.classList.add("show");
+      });
+    }
+
+    function renderList(listElement, emptyElement, items) {
+      listElement.innerHTML = items.map(function (item) {
+        return "<li>" + item + "</li>";
+      }).join("");
+      emptyElement.hidden = items.length > 0;
+    }
+
+    function persistStats(evaluation) {
+      const stats = getStats();
+      stats.totalValidations += 1;
+      evaluation.failureTags.forEach(function (tag) {
+        stats.failures[tag] = (stats.failures[tag] || 0) + 1;
+      });
+      if (evaluation.verdict === "INVALID") {
+        stats.invalidCount += 1;
+      }
+      localStorage.setItem(storageKey, JSON.stringify(stats));
+    }
+
+    function getStats() {
+      const fallback = { totalValidations: 0, invalidCount: 0, failures: {} };
+      try {
+        const raw = localStorage.getItem(storageKey);
+        return raw ? JSON.parse(raw) : fallback;
+      } catch (error) {
+        return fallback;
+      }
+    }
+
+    function renderDashboard() {
+      const stats = getStats();
+      const sortedFailures = Object.entries(stats.failures).sort(function (a, b) {
+        return b[1] - a[1];
+      });
+
+      commonMistake.textContent = sortedFailures.length
+        ? formatFailureLabel(sortedFailures[0][0])
+        : "No data yet";
+
+      worstHabit.textContent = deriveWorstHabit(stats, sortedFailures);
+    }
+
+    function deriveWorstHabit(stats, sortedFailures) {
+      if (!stats.totalValidations) {
+        return "No data yet";
+      }
+      const invalidRate = stats.invalidCount / stats.totalValidations;
+      if (invalidRate >= 0.65) {
+        return "Forcing low-quality trades";
+      }
+      if (sortedFailures.length) {
+        return "Repeating: " + formatFailureLabel(sortedFailures[0][0]);
+      }
+      return "Execution quality is stable";
+    }
+
+    function formatFailureLabel(tag) {
+      const labels = {
+        missing_pair: "Pair not selected",
+        unclear_4h_bias: "Unclear 4H bias",
+        pullback_missing: "Missing 1H pullback",
+        liquidity_missing: "Missing liquidity grab",
+        choch_missing: "Missing CHOCH",
+        bos_missing: "Missing break of structure",
+        retest_missing: "Missing retest",
+        confirmation_missing: "Weak entry confirmation",
+        rr_below_minimum: "Poor risk-to-reward",
+        news_nearby: "Trading near news",
+        strong_zone: "Trading into strong zone",
+        consolidation: "Entering in consolidation"
+      };
+      return labels[tag] || "Rule violation";
+    }
+  </script>
+</body>
+</html>
