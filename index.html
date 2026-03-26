@@ -1805,11 +1805,14 @@
     }
 
     function renderList(listElement, emptyElement, items) {
-      listElement.innerHTML = items.map(function (item) {
-        return "<li>" + item + "</li>";
-      }).join("");
-      emptyElement.hidden = items.length > 0;
-    }
+  const safeItems = Array.isArray(items) ? items : [];
+
+  listElement.innerHTML = safeItems.map(function (item) {
+    return "<li>" + item + "</li>";
+  }).join("");
+
+  emptyElement.hidden = safeItems.length > 0;
+}
 
     function persistStats(evaluation) {
       const stats = getStats();
