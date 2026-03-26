@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1361,6 +1362,11 @@
         pair: data.get("pair"),
         direction: data.get("direction"),
         rr: data.get("rr"),
+        biasClear: data.get("biasClear"),
+        structureClear: data.get("structureClear"),
+        breakConfirmed: data.get("breakConfirmed"),
+        retestConfirmed: data.get("retestConfirmed"),
+        entryConfirmation: data.get("entryConfirmation"),
         screenshot4h: document.getElementById("img4h").getAttribute("src"),
         screenshot1h: document.getElementById("img1h").getAttribute("src"),
         screenshotEntry: document.getElementById("imgEntry").getAttribute("src")
@@ -1370,6 +1376,11 @@
         !payload.pair && "Pair",
         !payload.direction && "Direction",
         !payload.rr && "RR",
+        !payload.biasClear && "4H bias review",
+        !payload.structureClear && "1H structure review",
+        !payload.breakConfirmed && "Break review",
+        !payload.retestConfirmed && "Retest review",
+        !payload.entryConfirmation && "Entry confirmation review",
         !payload.screenshot4h && "4H screenshot",
         !payload.screenshot1h && "1H screenshot",
         !payload.screenshotEntry && "Entry screenshot"
@@ -1448,16 +1459,28 @@
     }
 
     function mapApiResultToEvaluation(result) {
-      const missingItems = Array.isArray(result.missing_items) ? result.missing_items : [];
+      const missingItems = Array.isArray(result.missing) ? result.missing : [];
+      const items = Array.isArray(result.items) ? result.items : [];
       return {
         verdict: result.verdict === "VALID" ? "VALID" : "INVALID",
         totalScore: Number.isFinite(Number(result.score)) ? Number(result.score) : 0,
-        scores: buildCategoryScores(Number(result.score), result.verdict),
-        misses: (missingItems || []).length ? missingItems : [result.strict_explanation || "Sequence not respected."],
-        signature: result.strict_explanation || "Sequence not respected.",
-        summary: result.summary || "Analysis complete.",
+        scores: buildScoresFromItems(items, Number(result.score), result.verdict),
+        misses: missingItems.length ? missingItems : [result.message || "Sequence not respected."],
+        signature: result.message || "Sequence not respected.",
+        summary: buildApiSummary(result),
         failureTags: mapMissingItemsToTags(missingItems)
       };
+    }
+
+    function buildScoresFromItems(items, score, verdict) {
+      if (items.length) {
+        return items.reduce(function (accumulator, item) {
+          accumulator[item.name] = Math.max(0, Math.min(100, Number(item.score) || 0));
+          return accumulator;
+        }, {});
+      }
+
+      return buildCategoryScores(score, verdict);
     }
 
     function buildCategoryScores(score, verdict) {
@@ -1477,6 +1500,12 @@
         "Entry Review": Math.round(numericScore * 0.27),
         "Risk": Math.round(numericScore * 0.15)
       };
+    }
+
+    function buildApiSummary(result) {
+      const verdict = result.verdict === "VALID" ? "VALID" : "INVALID";
+      const score = Number.isFinite(Number(result.score)) ? Math.round(Number(result.score)) : 0;
+      return verdict + " | Trade quality " + score + "%";
     }
 
     function initializeUploads() {
@@ -1776,10 +1805,10 @@
     }
 
     function renderList(listElement, emptyElement, items) {
-      listElement.innerHTML = (items || []).map(function (item) {
+      listElement.innerHTML = items.map(function (item) {
         return "<li>" + item + "</li>";
       }).join("");
-      emptyElement.hidden = (items || []).length > 0;
+      emptyElement.hidden = items.length > 0;
     }
 
     function persistStats(evaluation) {
@@ -1856,6 +1885,9 @@
         const normalized = String(item).toLowerCase();
         if (normalized.includes("break")) {
           return "bos_missing";
+        }
+        if (normalized.includes("bias") || normalized.includes("long") || normalized.includes("short")) {
+          return "unclear_4h_bias";
         }
         if (normalized.includes("retest")) {
           return "retest_missing";
