@@ -1779,7 +1779,7 @@
       listElement.innerHTML = (items || []).map(function (item) {
         return "<li>" + item + "</li>";
       }).join("");
-      emptyElement.hidden = items.length > 0;
+      emptyElement.hidden = (items || []).length > 0;
     }
 
     function persistStats(evaluation) {
