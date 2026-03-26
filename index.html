@@ -1776,7 +1776,7 @@
     }
 
     function renderList(listElement, emptyElement, items) {
-      listElement.innerHTML = items.map(function (item) {
+      listElement.innerHTML = (items || []).map(function (item) {
         return "<li>" + item + "</li>";
       }).join("");
       emptyElement.hidden = items.length > 0;
