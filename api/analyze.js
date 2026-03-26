@@ -16,32 +16,54 @@ export default async function handler(req, res) {
         model: "gpt-4.1",
         input: `You are a strict trading validator.
 
+Return ONLY valid JSON. No extra text.
+
 Pair: ${pair}
 Direction: ${direction}
 RR: ${rr}
 
 Rules:
-1. Break must be strong close + continuation
-2. Retest must occur
-3. Entry must be CHoCH after retest
-4. Invalid if consolidation
-5. Invalid if no retest
-6. Invalid if weak break
-7. Invalid if RR < 1:2
+- Must have strong break + continuation
+- Must have retest
+- Must have CHoCH entry
+- Reject consolidation
+- Reject weak structure
+- Reject RR < 1:2
 
-Return JSON:
+Return EXACTLY:
+
 {
   "verdict": "VALID or INVALID",
   "score": number,
-  "summary": "",
-  "explanation": ""
+  "items": [
+    { "name": "4H Bias", "score": number },
+    { "name": "1H Structure", "score": number },
+    { "name": "Entry Review", "score": number },
+    { "name": "Risk", "score": number }
+  ],
+  "missing": ["list of issues"],
+  "message": "strict explanation"
 }`
       }),
     });
 
     const data = await response.json();
+    const text = data.output?.[0]?.content?.[0]?.text || "{}";
 
-    return res.status(200).json(data);
+    let parsed;
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      parsed = {
+        verdict: "INVALID",
+        score: 0,
+        items: [],
+        missing: ["Failed to parse AI response"],
+        message: text
+      };
+    }
+
+    return res.status(200).json(parsed);
 
   } catch (error) {
     return res.status(500).json({ error: error.message });
