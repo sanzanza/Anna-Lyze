@@ -1453,7 +1453,7 @@
         verdict: result.verdict === "VALID" ? "VALID" : "INVALID",
         totalScore: Number.isFinite(Number(result.score)) ? Number(result.score) : 0,
         scores: buildCategoryScores(Number(result.score), result.verdict),
-        misses: missingItems.length ? missingItems : [result.strict_explanation || "Sequence not respected."],
+        misses: (missingItems || []).length ? missingItems : [result.strict_explanation || "Sequence not respected."],
         signature: result.strict_explanation || "Sequence not respected.",
         summary: result.summary || "Analysis complete.",
         failureTags: mapMissingItemsToTags(missingItems)
