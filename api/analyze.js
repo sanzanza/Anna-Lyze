@@ -1,5 +1,41 @@
 const OPENAI_API_URL = "https://api.openai.com/v1/responses";
+function normalizeBool(value) {
+  if (typeof value === "boolean") return value;
+  if (typeof value === "string") {
+    const v = value.trim().toLowerCase();
+    return v === "true" || v === "yes";
+  }
+  return false;
+}
 
+function calculateScore(result) {
+  let score = 0;
+
+  if (result.bias4h) score += 20;
+  if (result.break1h) score += 20;
+  if (result.retest1h) score += 20;
+  if (result.chochEntry) score += 20;
+  if (result.riskOk) score += 20;
+
+  return score;
+}
+
+function calculateVerdict(result) {
+  const { bias4h, break1h, retest1h, chochEntry, riskOk } = result;
+
+  if (!bias4h) return "INVALID";
+  if (!break1h) return "INVALID";
+  if (!riskOk) return "INVALID";
+
+  if (break1h && retest1h && !chochEntry) return "WAIT";
+  if (break1h && !retest1h) return "WAIT";
+
+  if (bias4h && break1h && retest1h && chochEntry && riskOk) {
+    return "VALID";
+  }
+
+  return "INVALID";
+}
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
@@ -157,17 +193,27 @@ try {
   });
 }
 
-    return res.status(200).json({
-      verdict: ["VALID", "INVALID", "WAIT"].includes(parsed.verdict)
-  ? parsed.verdict
-  : "INVALID",
-      score: clampScore(parsed.score),
-      items: normalizeItems(parsed.items),
-      missing: Array.isArray(parsed.missing) ? parsed.missing.map(String) : [],
-      message: typeof parsed.message === "string"
-        ? parsed.message
-        : "Sequence not respected."
-    });
+    // Normalize AI booleans
+const result = {
+  bias4h: normalizeBool(parsed.bias4h),
+  break1h: normalizeBool(parsed.break1h),
+  retest1h: normalizeBool(parsed.retest1h),
+  chochEntry: normalizeBool(parsed.chochEntry),
+  riskOk: normalizeBool(parsed.riskOk),
+  notes: parsed.notes || {},
+  missing: Array.isArray(parsed.missing) ? parsed.missing : []
+};
+
+// 🔥 Deterministic outputs
+const verdict = calculateVerdict(result);
+const score = calculateScore(result);
+
+return res.status(200).json({
+  verdict,
+  score,
+  breakdown: result.notes,
+  missing: result.missing
+});
   } catch (error) {
     return res.status(500).json({
       error: "Analysis failed.",
