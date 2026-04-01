@@ -141,10 +141,26 @@ module.exports = async function handler(req, res) {
     }
 
     const rawText = payload.output_text || extractOutputText(payload);
-    const parsed = JSON.parse(rawText);
+    let parsed;
+
+try {
+  parsed = JSON.parse(rawText);
+} catch (e) {
+  console.error("Invalid JSON from AI:", rawText);
+
+  return res.status(200).json({
+    verdict: "INVALID",
+    score: 0,
+    items: [],
+    missing: ["AI returned invalid format"],
+    message: "Invalid AI response format"
+  });
+}
 
     return res.status(200).json({
-      verdict: parsed.verdict || "INVALID",
+      verdict: ["VALID", "INVALID", "WAIT"].includes(parsed.verdict)
+  ? parsed.verdict
+  : "INVALID",
       score: clampScore(parsed.score),
       items: normalizeItems(parsed.items),
       missing: Array.isArray(parsed.missing) ? parsed.missing.map(String) : [],
