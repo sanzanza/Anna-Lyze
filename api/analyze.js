@@ -70,7 +70,7 @@ module.exports = async function handler(req, res) {
       "- Entry Review should usually be 0-30 if confirmation sequence is weak or missing.",
       "- Risk should usually be 40-80 depending on RR and environmental quality.",
       "Use strict phrases where appropriate, such as: No strong break confirmed. Price did not retest the level. You are anticipating, not reacting. Sequence not respected. Market is consolidating, no trade.",
-      "Return JSON only."
+      "Return ONLY valid JSON. No extra text. No explanations. Must match the schema exactly."
     ].join(" ");
 
     const userPrompt = [
@@ -84,7 +84,7 @@ module.exports = async function handler(req, res) {
       `Trader claims entry confirmation is present: ${entryConfirmation}`,
       "Assess the trade using STRICT sequential logic. Do NOT skip steps. If any step is missing but forming, return WAIT. Only return INVALID if the structure is clearly broken or contradictory.",
       "If break and retest exist but entry confirmation (CHOCH) is missing, return WAIT instead of INVALID."
-      "Return an object with this exact schema:",
+      "Return ONLY this JSON format. Do not add anything before or after:",
       "{",
       '  "verdict": "VALID or INVALID or WAIT",',
       '  "score": number,',
