@@ -83,9 +83,10 @@ module.exports = async function handler(req, res) {
       `Trader claims retest is confirmed: ${retestConfirmed}`,
       `Trader claims entry confirmation is present: ${entryConfirmation}`,
       "Assess the trade from the screenshots using the strict sequential rules.",
+      "If break and retest exist but entry confirmation (CHOCH) is missing, return WAIT instead of INVALID."
       "Return an object with this exact schema:",
       "{",
-      '  "verdict": "VALID or INVALID",',
+      '  "verdict": "VALID or INVALID or WAIT",',
       '  "score": number,',
       '  "items": [',
       '    { "name": "4H Bias", "score": number },',
