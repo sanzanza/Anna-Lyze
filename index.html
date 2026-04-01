@@ -1503,7 +1503,7 @@
     }
 
     function buildApiSummary(result) {
-      const verdict = result.verdict === "VALID" ? "VALID" : "INVALID";
+      const verdict = result.verdict || "INVALID";
       const score = Number.isFinite(Number(result.score)) ? Math.round(Number(result.score)) : 0;
       return verdict + " | Trade quality " + score + "%";
     }
