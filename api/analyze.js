@@ -82,7 +82,7 @@ module.exports = async function handler(req, res) {
       `Trader claims break is confirmed: ${breakConfirmed}`,
       `Trader claims retest is confirmed: ${retestConfirmed}`,
       `Trader claims entry confirmation is present: ${entryConfirmation}`,
-      "Assess the trade from the screenshots using the strict sequential rules.",
+      "Assess the trade using STRICT sequential logic. Do NOT skip steps. If any step is missing but forming, return WAIT. Only return INVALID if the structure is clearly broken or contradictory.",
       "If break and retest exist but entry confirmation (CHOCH) is missing, return WAIT instead of INVALID."
       "Return an object with this exact schema:",
       "{",
