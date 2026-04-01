@@ -214,11 +214,22 @@ const result = {
 const verdict = calculateVerdict(result);
 const score = calculateScore(result);
 
+let message = "";
+
+if (verdict === "VALID") {
+  message = "All required conditions are confirmed.";
+} else if (verdict === "WAIT") {
+  message = "Setup is forming. Waiting for entry confirmation.";
+} else {
+  message = "Setup conditions are not valid.";
+}
+
 return res.status(200).json({
   verdict,
   score,
   breakdown: result.notes,
-  missing: result.missing
+  missing: result.missing,
+  message
 });
   } catch (error) {
     return res.status(500).json({
