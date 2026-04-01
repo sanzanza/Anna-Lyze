@@ -83,7 +83,7 @@ module.exports = async function handler(req, res) {
       `Trader claims retest is confirmed: ${retestConfirmed}`,
       `Trader claims entry confirmation is present: ${entryConfirmation}`,
       "Assess the trade using STRICT sequential logic. Do NOT skip steps. If any step is missing but forming, return WAIT. Only return INVALID if the structure is clearly broken or contradictory.",
-      "If break and retest exist but entry confirmation (CHOCH) is missing, return WAIT instead of INVALID."
+      "If break and retest exist but entry confirmation (CHOCH) is missing, return WAIT instead of INVALID.",
       "Return ONLY this JSON format. Do not add anything before or after:",
       "{",
       '  "verdict": "VALID or INVALID or WAIT",',
