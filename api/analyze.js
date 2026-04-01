@@ -144,7 +144,7 @@ module.exports = async function handler(req, res) {
     const parsed = JSON.parse(rawText);
 
     return res.status(200).json({
-      verdict: parsed.verdict === "VALID" ? "VALID" : "INVALID",
+      verdict: parsed.verdict || "INVALID",
       score: clampScore(parsed.score),
       items: normalizeItems(parsed.items),
       missing: Array.isArray(parsed.missing) ? parsed.missing.map(String) : [],
